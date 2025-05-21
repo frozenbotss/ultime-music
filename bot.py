@@ -502,6 +502,7 @@ async def invite_assistant(chat_id, invite_link, processing_message):
         return False
 
 
+
 @bot.on_message(filters.command("start"))
 async def start_handler(_, message):
     # Calculate uptime
@@ -515,7 +516,7 @@ async def start_handler(_, message):
     # Caption with bot info and uptime
     caption = (
         f"👋 нєу {user_mention} 💠, 🥀\n\n"
-        "🎶 Wᴇʟᴄᴏᴍᴇ ᴛᴏ Fʀᴏᴢᴇɴ 🥀 ᴍᴜsɪᴄ! 🎵\n\n"
+        "🎶 Wᴇʟᴄᴏᴍᴇ  🎵\n\n"
         "➻ 🚀 A Sᴜᴘᴇʀғᴀsᴛ & Pᴏᴡᴇʀғᴜʟ Tᴇʟᴇɢʀᴀᴍ Mᴜsɪᴄ Bᴏᴛ ᴡɪᴛʜ ᴀᴍᴀᴢɪɴɢ ғᴇᴀᴛᴜʀᴇs. ✨\n\n"
         "🎧 Sᴜᴘᴘᴏʀᴛᴇᴅ Pʟᴀᴛғᴏʀᴍs: ʏᴏᴜᴛᴜʙᴇ, sᴘᴏᴛɪғʏ, ʀᴇssᴏ, ᴀᴘᴘʟᴇ ᴍᴜsɪᴄ, sᴏᴜɴᴅᴄʟᴏᴜᴅ.\n\n"
         "🔹 Kᴇʏ Fᴇᴀᴛᴜʀᴇs:\n"
@@ -531,15 +532,23 @@ async def start_handler(_, message):
 
     # Buttons on the start screen
     buttons = [
-        [InlineKeyboardButton("➕ Add me", url="https://t.me/vcmusiclubot?startgroup=true"),
-         InlineKeyboardButton("💬 Support", url="https://t.me/Frozensupport1")],
+        [
+            InlineKeyboardButton(
+                "➕ Add me",
+                url="https://t.me/AmericanPepeCTObot?startgroup=true"
+            ),
+            InlineKeyboardButton(
+                "💬 Support",
+                url="https://t.me/american_pepecto"
+            )
+        ],
         [InlineKeyboardButton("❓ Help", callback_data="show_help")]
     ]
     reply_markup = InlineKeyboardMarkup(buttons)
 
-    # Send the animation (loops infinitely) instead of a video :contentReference[oaicite:0]{index=0}
-    await message.reply_animation(
-        animation="https://frozen-imageapi.lagendplayersyt.workers.dev/file/2e483e17-05cb-45e2-b166-1ea476ce9521.mp4",
+    # Send a photo instead of an animation
+    await message.reply_photo(
+        photo="https://files.catbox.moe/39k0u4.jpg",
         caption=caption,
         reply_markup=reply_markup
     )
@@ -650,13 +659,13 @@ async def go_back_callback(_, callback_query):
         "๏ ᴄʟɪᴄᴋ ᴛʜᴇ ʜᴇʟᴘ ʙᴜᴛᴛᴏɴ ғᴏʀ ᴍᴏᴅᴜʟᴇ ᴀɴᴅ ᴄᴏᴍᴍᴀɴᴅ ɪɴғᴏ.."
     )
     buttons = [
-        [InlineKeyboardButton("➕ Add me", url="https://t.me/vcmusiclubot?startgroup=true"),
-         InlineKeyboardButton("💬 Support", url="https://t.me/Frozensupport1")],
+        [InlineKeyboardButton("➕ Add me", url="https://t.me/AmericanPepeCTObot?startgroup=true"),
+         InlineKeyboardButton("💬 Support", url="https://t.me/american_pepecto")],
         [InlineKeyboardButton("❓ Help", callback_data="show_help")]
     ]
     reply_markup = InlineKeyboardMarkup(buttons)
     await callback_query.message.edit_media(
-        media=InputMediaPhoto(media="https://files.catbox.moe/kao3ip.jpeg", caption=caption),
+        media=InputMediaPhoto(media="https://files.catbox.moe/39k0u4.jpg", caption=caption),
         reply_markup=reply_markup
     )
 
@@ -1046,10 +1055,10 @@ async def fallback_local_playback(chat_id, message, song_info):
             ],
             [
                 InlineKeyboardButton(text="➕ᴀᴅᴅ тσ ρℓαуℓιѕт➕", callback_data="add_to_playlist"),
-                InlineKeyboardButton(text="⚡ᴅᴏᴡɴʟᴏᴀᴅ⚡", url="https://t.me/songdownloderfrozenbot?start=true")
+                InlineKeyboardButton(text="⚡WEBSITE⚡", url="https://americanpepe.site/")
             ],
             [
-                InlineKeyboardButton(text="✨ υρ∂αтєѕ ✨", url="https://t.me/vibeshiftbots"),
+                InlineKeyboardButton(text="✨ υρ∂αтєѕ ✨", url="https://t.me/american_pepecto"),
                 InlineKeyboardButton(text="💕 ѕυρρσят 💕", url="https://t.me/Frozensupport1")
             ]
         ])
@@ -1179,10 +1188,10 @@ async def start_playback_task(chat_id, message):
         ],
         [
             InlineKeyboardButton(text="➕ᴀᴅᴅ тσ ρℓαυℓιѕт➕", callback_data="add_to_playlist"),
-            InlineKeyboardButton(text="⚡ᴅᴏᴡɴʟᴏᴀᴅ⚡", url="https://t.me/songdownloderfrozenbot?start=true")
+            InlineKeyboardButton(text="⚡WEBSITE⚡", url="https://americanpepe.site/")
         ],
         [
-            InlineKeyboardButton(text="✨ υρ∂αтєѕ ✨", url="https://t.me/vibeshiftbots"),
+            InlineKeyboardButton(text="✨ υρ∂αтєѕ ✨", url="https://t.me/american_pepecto"),
             InlineKeyboardButton(text="💕 ѕυρρσят 💕", url="https://t.me/Frozensupport1")
         ]
     ])

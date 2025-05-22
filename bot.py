@@ -141,7 +141,7 @@ GROUP_Y = 40
 GROUP_FONT_SIZE = 72
 
 
-# Containers for song queues per chat/group
+loop_mode = {}
 chat_containers = {}
 playback_tasks = {}  # To manage playback tasks per chat
 bot_start_time = time.time()
@@ -1678,6 +1678,14 @@ async def callback_query_handler(client, callback_query):
     else:
         await callback_query.answer("Unknown action.", show_alert=True)
 
+@bot.on_message(filters.group & filters.command("loop"))
+async def loop_handler(_, message: Message):
+    chat_id = message.chat.id
+    # Toggle loop state
+    current = loop_mode.get(chat_id, False)
+    loop_mode[chat_id] = not current
+    status = "enabled" if loop_mode[chat_id] else "disabled"
+    await message.reply(f"🔁 Looping {status} for this chat.")
 
 
 
@@ -1685,7 +1693,7 @@ async def callback_query_handler(client, callback_query):
 async def stream_end_handler(_: PyTgCalls, update: StreamEnded):
     chat_id = update.chat_id
 
-    # Update playback records for a natural end event
+    # 1. Record the natural end event
     record = {
         "chat_id": chat_id,
         "timestamp": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
@@ -1695,48 +1703,46 @@ async def stream_end_handler(_: PyTgCalls, update: StreamEnded):
     api_playback_records.append(record)
     playback_mode.pop(chat_id, None)
 
+    # 2. If there is a queue for this chat
     if chat_id in chat_containers and chat_containers[chat_id]:
-        # Remove the finished song from the queue.
-        skipped_song = chat_containers[chat_id].pop(0)
-        await asyncio.sleep(3)  # Delay to ensure the stream has fully ended
-        try:
-            os.remove(skipped_song.get('file_path', ''))
-        except Exception as e:
-            print(f"Error deleting file: {e}")
+        # a) Pop the just-finished song
+        finished = chat_containers[chat_id].pop(0)
 
-        if chat_id in chat_containers and chat_containers[chat_id]:
-            # If there are more songs, start the next one.
+        # b) Loop logic: if enabled, re-queue at front
+        if loop_mode.get(chat_id, False):
+            chat_containers[chat_id].insert(0, finished)
+        else:
+            # Otherwise, delete its temporary file
+            try:
+                path = finished.get('file_path', '')
+                if path and os.path.exists(path):
+                    os.remove(path)
+            except Exception as e:
+                print(f"Error deleting file: {e}")
+
+        # c) Brief delay to ensure stream cleanup
+        await asyncio.sleep(3)
+
+        # d) If songs remain, start next
+        if chat_containers[chat_id]:
             await start_playback_task(chat_id, None)
-        else:
-            # Queue is empty; try to leave the voice chat first.
-            await leave_voice_chat(chat_id)
-            # Then fetch suggestions if a last played song is available.
-            last_song = last_played_song.get(chat_id)
-            if last_song and last_song.get('url'):
-                status_msg = await bot.send_message(
-                    chat_id, "😔 No more songs in the queue. Fetching song suggestions..."
-                )
-                await show_suggestions(chat_id, last_song.get('url'), status_message=status_msg)
-            else:
-                await bot.send_message(
-                    chat_id,
-                    "❌ No more songs in the queue.\nSupport: @frozensupport1"
-                )
-    else:
-        # No songs in the queue.
-        await leave_voice_chat(chat_id)
-        last_song = last_played_song.get(chat_id)
-        if last_song and last_song.get('url'):
-            status_msg = await bot.send_message(
-                chat_id, "😔 No more songs in the queue. Fetching song suggestions..."
-            )
-            await show_suggestions(chat_id, last_song.get('url'), status_message=status_msg)
-        else:
-            await bot.send_message(
-                chat_id,
-                "❌ No more songs in the queue.\nSupport: @frozensupport1"
-            )
+            return
 
+    # 3. No songs left (or loop off emptied queue)
+    await leave_voice_chat(chat_id)
+
+    last = last_played_song.get(chat_id)
+    if last and last.get('url'):
+        status_msg = await bot.send_message(
+            chat_id,
+            "😔 No more songs in the queue. Fetching song suggestions..."
+        )
+        await show_suggestions(chat_id, last.get('url'), status_message=status_msg)
+    else:
+        await bot.send_message(
+            chat_id,
+            "❌ No more songs in the queue.\nSupport: @frozensupport1"
+        )
 
 async def leave_voice_chat(chat_id):
     try:

@@ -16,3 +16,4 @@ asyncpg
 pymongo
 aiofiles
 gender-guesser
+ffprobe

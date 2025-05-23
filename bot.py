@@ -692,7 +692,7 @@ async def play_handler(_, message):
                     )
                     return
             else:
-                await processing_message.edit("❌ Please give bot invite‑link permission.\nSupport: @frozensupport1")
+                await processing_message.edit("❌ Please give bot invite-link permission.\nSupport: @frozensupport1")
                 return
 
         # Fetch fresh media reference and download
@@ -727,8 +727,14 @@ async def play_handler(_, message):
             'duration': format_time(duration),
             'duration_seconds': duration,
             'requester': message.from_user.first_name,
-            'thumbnail': thumb_path
+            'thumbnail': thumb_path,
+            'file_path': file_path
         }
+
+        # —— NEW: enqueue for loop support —— 
+        chat_containers.setdefault(chat_id, []).append(song_info)
+        # ————————————————————————————
+
         await fallback_local_playback(chat_id, processing_message, song_info)
         return
 
@@ -769,6 +775,7 @@ async def play_handler(_, message):
 
     # Delegate to query processor
     await process_play_command(message, query)
+
 
 
 async def process_play_command(message, query):

@@ -718,7 +718,7 @@ async def play_handler(_, message):
         except Exception:
             pass
 
-        # Prepare song_info and fallback to local playback
+        # Prepare song_info
         duration = media.duration or 0
         title = getattr(media, 'file_name', 'Untitled')
         song_info = {
@@ -731,11 +731,24 @@ async def play_handler(_, message):
             'file_path': file_path
         }
 
-        # —— NEW: enqueue for loop support —— 
-        chat_containers.setdefault(chat_id, []).append(song_info)
-        # ————————————————————————————
+        # Enqueue for loop/skip support
+        queue = chat_containers.setdefault(chat_id, [])
+        queue.append(song_info)
 
+        # Play immediately
         await fallback_local_playback(chat_id, processing_message, song_info)
+
+        # If there's now more than one track in the queue, show its position & controls
+        if len(queue) > 1:
+            queue_buttons = InlineKeyboardMarkup([
+                [InlineKeyboardButton("⏭ Skip", callback_data="skip"),
+                 InlineKeyboardButton("🗑 Clear", callback_data="clear")]
+            ])
+            await message.reply(
+                f"➕ Added **{title}** to the queue.\n"
+                f"**Queue position:** {len(queue)-1}",
+                reply_markup=queue_buttons
+            )
         return
 
     # Otherwise, process query-based search
@@ -1156,7 +1169,7 @@ async def start_playback_task(chat_id, message):
             await processing_message.edit("⏳ API server is sleeping. Waiting an extra 20 seconds before falling back...")
         except Exception as edit_error:
             print(f"Error editing processing message: {edit_error}")
-        await asyncio.sleep(20)
+        await asyncio.sleep(1)
         fallback_error = f"❌ Frozen Play API Error: {str(e)}\nFalling back to local playback..."
         try:
             await processing_message.edit(fallback_error)
@@ -1713,7 +1726,6 @@ async def loop_handler(_, message: Message):
             msg += "\nNo songs in the queue to loop."
 
     await message.reply(msg)
-
 
 
 

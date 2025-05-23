@@ -1685,7 +1685,19 @@ async def loop_handler(_, message: Message):
     current = loop_mode.get(chat_id, False)
     loop_mode[chat_id] = not current
     status = "enabled" if loop_mode[chat_id] else "disabled"
-    await message.reply(f"🔁 Looping {status} for this chat.")
+
+    # Build response message
+    msg = f"🔁 Looping {status} for this chat."
+    if loop_mode[chat_id]:
+        queue = chat_containers.get(chat_id, [])
+        if queue:
+            msg += "\n
+Songs on loop:\n"
+            for idx, song in enumerate(queue, 1):
+                msg += f"{idx}. {song['title']}\n"
+        else:
+            msg += "\nNo songs in the queue to loop."
+    await message.reply(msg)
 
 
 

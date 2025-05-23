@@ -1695,18 +1695,25 @@ async def loop_handler(_, message: Message):
 
     # Build response
     msg = f"🔁 Looping {status} for this chat."
+    queue = chat_containers.get(chat_id, [])
+
     if loop_mode[chat_id]:
-        queue = chat_containers.get(chat_id, [])
         if queue:
             msg += "\nSongs on loop:\n"
             for idx, song in enumerate(queue, 1):
-                # Make sure song['title'] is a string
                 title = song.get("title", "Unknown title")
                 msg += f"{idx}. {title}\n"
+            # ——— NEW: immediately replay the current track via your fallback for local files ———
+            # Note: fallback_local_playback takes (chat_id, status_message, song_info)
+            # we reuse `message` as a simple status_message here
+            first = queue[0]
+            await fallback_local_playback(chat_id, message, first)
+            # ——————————————————————————————————————————————————————————————
         else:
             msg += "\nNo songs in the queue to loop."
 
     await message.reply(msg)
+
 
 
 
